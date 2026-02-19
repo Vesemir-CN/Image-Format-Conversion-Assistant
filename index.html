@@ -5,333 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scientific Image Processing Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1e40af',
-                        secondary: '#3b82f6',
-                        accent: '#60a5fa',
-                        neutral: '#f3f4f6',
-                        'neutral-dark': '#6b7280',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                }
-            }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .drag-over {
-                @apply border-2 border-accent bg-blue-50;
-            }
-            .file-item {
-                @apply flex items-center justify-between p-3 mb-2 bg-white rounded-lg shadow-sm border border-gray-200;
-            }
-            .btn-primary {
-                @apply bg-primary hover:bg-blue-800 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-2;
-            }
-            .btn-secondary {
-                @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-lg transition-all duration-300;
-            }
-            .form-label {
-                @apply block text-sm font-medium text-gray-700 mb-1;
-            }
-            .form-select {
-                @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all;
-            }
-            .progress-bar {
-                @apply h-4 bg-gray-200 rounded-full overflow-hidden;
-            }
-            .progress-fill {
-                @apply h-full bg-primary transition-all duration-300;
-            }
+        .drag-over {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+        .file-item {
+            transition: all 0.2s ease;
+        }
+        .file-item:hover {
+            background-color: #f3f4f6;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
-    <!-- Header -->
-    <header class="bg-white shadow-md">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="flex items-center mb-4 md:mb-0">
-                    <div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-white">
-                        <i class="fa fa-cogs text-2xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <h1 class="text-2xl font-bold text-gray-900">Scientific Image Processing Assistant</h1>
-                        <p class="text-sm text-gray-600">Professional image format conversion tool for researchers</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <a href="#features" class="text-gray-600 hover:text-primary transition-colors">
-                        <i class="fa fa-info-circle mr-1"></i> Features
-                    </a>
-                    <a href="#about" class="text-gray-600 hover:text-primary transition-colors">
-                        <i class="fa fa-question-circle mr-1"></i> About
-                    </a>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
+                    <i class="fa fa-image text-3xl text-white"></i>
                 </div>
             </div>
-        </div>
-    </header>
+            <h1 class="text-4xl font-bold text-gray-900 mb-3">Scientific Image Processing Assistant</h1>
+            <p class="text-gray-600 text-lg">Convert your images between multiple formats with ease</p>
+        </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Hero Section -->
-        <section class="mb-12 text-center">
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">Convert Images Across Formats with Precision</h2>
-            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-                A powerful tool for scientific researchers to convert between PDF, JPG, PNG, TIFF, and SVG formats with customizable settings
-            </p>
-        </section>
-
-        <!-- Conversion Form -->
-        <section class="bg-white rounded-xl shadow-lg p-6 mb-12">
-            <h3 class="text-xl font-semibold text-gray-900 mb-6">Image Conversion</h3>
-            
-            <!-- File Upload Area -->
+        <!-- Main Card -->
+        <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8">
+            <!-- Upload Area -->
             <div class="mb-8">
-                <label class="form-label">Upload Files</label>
-                <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-all cursor-pointer">
-                    <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-600 mb-2">Drag and drop files here or click to browse</p>
-                    <p class="text-sm text-gray-500">Supports PDF, JPG, PNG, TIFF, SVG (max 500MB per file)</p>
-                    <input type="file" id="file-input" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,.svg">
-                </div>
-                
-                <!-- Uploaded Files List -->
-                <div id="files-list" class="mt-4 space-y-2 hidden">
-                    <!-- File items will be dynamically added here -->
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Upload Files</label>
+                <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-blue-50">
+                    <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,.svg" class="hidden">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-cloud-upload text-4xl text-blue-600"></i>
+                    </div>
+                    <p class="text-gray-700 font-medium mb-2">Drag & drop your files here</p>
+                    <p class="text-gray-500 text-sm mb-3">or click to browse</p>
+                    <span class="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                        PDF, JPG, PNG, TIFF, SVG
+                    </span>
                 </div>
             </div>
 
-            <!-- Format Selection -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Files List -->
+            <div id="files-list" class="mb-8 hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-gray-700">Uploaded Files</h3>
+                    <button id="clear-btn" class="text-sm text-red-500 hover:text-red-700 transition-colors">
+                        <i class="fa fa-trash mr-1"></i> Clear All
+                    </button>
+                </div>
+                <div id="files-container" class="space-y-3"></div>
+            </div>
+
+            <!-- Conversion Settings -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
                 <div>
-                    <label class="form-label">Source Format</label>
-                    <select id="source-format" class="form-select">
-                        <option value="auto">Auto Detect</option>
-                        <option value="pdf">PDF</option>
-                        <option value="jpg">JPG/JPEG</option>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Convert To</label>
+                    <select id="target-format" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                        <option value="jpg">JPEG</option>
                         <option value="png">PNG</option>
+                        <option value="pdf">PDF</option>
                         <option value="tiff">TIFF</option>
-                        <option value="svg">SVG</option>
                     </select>
                 </div>
-                <div>
-                    <label class="form-label">Target Format</label>
-                    <select id="target-format" class="form-select">
-                        <option value="jpg">JPG/JPEG</option>
-                        <option value="png">PNG</option>
-                        <option value="tiff">TIFF</option>
-                        <option value="pdf">PDF</option>
-                        <option value="svg">SVG</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- DPI Settings (only for JPG output) -->
-            <div id="dpi-settings" class="mb-8 hidden">
-                <label class="form-label">DPI Settings</label>
-                <div class="flex flex-col md:flex-row items-center gap-4">
-                    <input type="range" id="dpi-slider" min="300" max="600" step="10" value="300" 
-                           class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                    <input type="number" id="dpi-input" min="300" max="600" value="300" 
-                           class="w-20 p-2 border border-gray-300 rounded-lg text-center">
-                    <span class="text-sm text-gray-600">300-600 DPI</span>
-                </div>
-            </div>
-
-            <!-- Output Settings -->
-            <div class="mb-8">
-                <label class="form-label">Output Options</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="form-label">Output Quality</label>
-                        <select id="quality" class="form-select">
-                            <option value="low">Low (Smaller file size)</option>
-                            <option value="medium">Medium (Balanced)</option>
-                            <option value="high" selected>High (Best quality)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Color Mode</label>
-                        <select id="color-mode" class="form-select">
-                            <option value="rgb" selected>RGB</option>
-                            <option value="grayscale">Grayscale</option>
-                        </select>
+                <div id="dpi-settings">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">DPI (Quality)</label>
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="dpi-slider" min="300" max="600" value="300" class="flex-1">
+                        <input type="number" id="dpi-input" min="300" max="600" value="300" class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center">
                     </div>
                 </div>
             </div>
 
-            <!-- Progress Area -->
-            <div id="progress-area" class="mb-8 hidden">
+            <!-- Convert Button -->
+            <div class="flex gap-4">
+                <button id="convert-btn" disabled class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa fa-magic mr-2"></i> Convert Images
+                </button>
+                <button id="cancel-btn" class="hidden bg-gray-200 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+                    <i class="fa fa-times mr-2"></i> Cancel
+                </button>
+            </div>
+
+            <!-- Progress -->
+            <div id="progress-area" class="mt-8 hidden">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-700">Conversion Progress</span>
-                    <span id="progress-percentage" class="text-sm font-medium text-primary">0%</span>
+                    <span id="progress-message" class="text-sm font-medium text-gray-700">Preparing...</span>
+                    <span id="progress-percentage" class="text-sm font-bold text-blue-600">0%</span>
                 </div>
-                <div class="progress-bar">
-                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div id="progress-fill" class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 progress-bar" style="width: 0%"></div>
                 </div>
-                <p id="progress-message" class="text-sm text-gray-600 mt-2">Preparing files...</p>
             </div>
 
-            <!-- Control Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button id="convert-btn" class="btn-primary flex-1">
-                    <i class="fa fa-play"></i>
-                    Start Conversion
-                </button>
-                <button id="clear-btn" class="btn-secondary">
-                    <i class="fa fa-trash"></i>
-                    Clear
-                </button>
-                <button id="cancel-btn" class="btn-secondary hidden">
-                    <i class="fa fa-times"></i>
-                    Cancel
-                </button>
-            </div>
-        </section>
-
-        <!-- Download Section -->
-        <section id="download-section" class="bg-white rounded-xl shadow-lg p-6 mb-12 hidden">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Conversion Complete</h3>
-            <div id="download-items" class="space-y-4">
-                <!-- Download items will be dynamically added here -->
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section id="features" class="mb-12">
-            <h3 class="text-2xl font-bold text-gray-900 mb-6">Key Features</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-exchange text-primary text-xl"></i>
-                    </div>
-                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Multiple Format Support</h4>
-                    <p class="text-gray-600">Convert between PDF, JPG, PNG, TIFF, and SVG formats with ease</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-bolt text-primary text-xl"></i>
-                    </div>
-                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Batch Processing</h4>
-                    <p class="text-gray-600">Upload and convert multiple files simultaneously for efficiency</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-sliders text-primary text-xl"></i>
-                    </div>
-                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Customizable Settings</h4>
-                    <p class="text-gray-600">Adjust DPI, quality, and color settings for optimal results</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-cloud-upload text-primary text-xl"></i>
-                    </div>
-                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Drag & Drop Support</h4>
-                    <p class="text-gray-600">Easy file uploads with drag-and-drop functionality</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-lock text-primary text-xl"></i>
-                    </div>
-                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Secure Processing</h4>
-                    <p class="text-gray-600">Files are processed securely and deleted after conversion</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-mobile text-primary text-xl"></i>
-                    </div>
-                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Responsive Design</h4>
-                    <p class="text-gray-600">Works seamlessly on desktop, tablet, and mobile devices</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- About Section -->
-        <section id="about" class="bg-white rounded-xl shadow-lg p-6">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">About This Tool</h3>
-            <p class="text-gray-600 mb-4">
-                Scientific Image Processing Assistant is designed to help researchers and scientists convert between different image formats quickly and efficiently. Whether you need to convert PDF figures to editable formats, prepare images for publication, or optimize file sizes for presentations, this tool provides the functionality you need.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h4 class="font-medium text-gray-900 mb-2">Supported Formats</h4>
-                    <ul class="list-disc list-inside text-gray-600 space-y-1">
-                        <li>PDF (Portable Document Format)</li>
-                        <li>JPG/JPEG (Joint Photographic Experts Group)</li>
-                        <li>PNG (Portable Network Graphics)</li>
-                        <li>TIFF (Tagged Image File Format)</li>
-                        <li>SVG (Scalable Vector Graphics)</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-900 mb-2">Usage Tips</h4>
-                    <ul class="list-disc list-inside text-gray-600 space-y-1">
-                        <li>For best results, use high-quality source images</li>
-                        <li>Adjust DPI settings when converting to JPG for print quality</li>
-                        <li>SVG format is recommended for vector graphics</li>
-                        <li>PNG is ideal for images with transparency</li>
-                        <li>TIFF provides lossless quality for professional use</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12 mt-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Scientific Image Processing Assistant</h4>
-                    <p class="text-gray-300 text-sm">
-                        A professional tool for researchers to convert and process scientific images with precision.
-                    </p>
-                </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2 text-gray-300">
-                        <li><a href="#" class="hover:text-white transition-colors">Home</a></li>
-                        <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
-                        <li><a href="#about" class="hover:text-white transition-colors">About</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Contact</h4>
-                    <ul class="space-y-2 text-gray-300">
-                        <li class="flex items-center gap-2">
-                            <i class="fa fa-envelope"></i>
-                            <span>support@imageconverter.example.com</span>
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <i class="fa fa-github"></i>
-                            <span>github.com/scientific-image-tools</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
-                <p>&copy; 2026 Scientific Image Processing Assistant. All rights reserved.</p>
+            <!-- Download Section -->
+            <div id="download-section" class="mt-8 hidden">
+                <h3 class="font-semibold text-gray-700 mb-4">
+                    <i class="fa fa-check-circle text-green-500 mr-2"></i> Conversion Complete!
+                </h3>
+                <div id="download-items" class="space-y-3"></div>
             </div>
         </div>
-    </footer>
 
-    <!-- JavaScript -->
+        <!-- Features -->
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white rounded-2xl p-6 shadow-lg text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-bolt text-blue-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-800 mb-2">Fast & Secure</h4>
+                <p class="text-gray-600 text-sm">All processing happens in your browser, no files are uploaded to any server</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-lg text-center">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-files-o text-green-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-800 mb-2">Batch Processing</h4>
+                <p class="text-gray-600 text-sm">Convert multiple images at once with our batch conversion feature</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-lg text-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-sliders text-purple-600 text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-800 mb-2">Customizable</h4>
+                <p class="text-gray-600 text-sm">Adjust DPI and other settings to get the perfect output</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center py-8 text-gray-600">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <i class="fa fa-code"></i>
+                <span class="font-medium">Scientific Image Processing Assistant</span>
+            </div>
+            <p class="text-sm">Made with <i class="fa fa-heart text-red-500"></i> for the research community</p>
+        </footer>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const dropArea = document.getElementById('drop-area');
             const fileInput = document.getElementById('file-input');
             const filesList = document.getElementById('files-list');
+            const filesContainer = document.getElementById('files-container');
             const convertBtn = document.getElementById('convert-btn');
             const clearBtn = document.getElementById('clear-btn');
             const cancelBtn = document.getElementById('cancel-btn');
@@ -341,7 +174,6 @@
             const progressMessage = document.getElementById('progress-message');
             const downloadSection = document.getElementById('download-section');
             const downloadItems = document.getElementById('download-items');
-            const sourceFormat = document.getElementById('source-format');
             const targetFormat = document.getElementById('target-format');
             const dpiSettings = document.getElementById('dpi-settings');
             const dpiSlider = document.getElementById('dpi-slider');
@@ -349,10 +181,7 @@
 
             let uploadedFiles = [];
             let conversionInProgress = false;
-            let currentTaskId = null;
-            let statusCheckInterval = null;
 
-            // Drag and drop functionality
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 dropArea.addEventListener(eventName, preventDefaults, false);
             });
@@ -383,83 +212,107 @@
             function handleDrop(e) {
                 const dt = e.dataTransfer;
                 const files = dt.files;
-                uploadFilesToServer(files);
+                handleFiles(files);
             }
 
-            // File input change
             fileInput.addEventListener('change', function() {
-                uploadFilesToServer(this.files);
+                handleFiles(this.files);
             });
 
-            // Click to upload
             dropArea.addEventListener('click', function() {
                 fileInput.click();
             });
 
-            // Get API base URL
-            function getApiBaseUrl() {
-                // Use relative path for Vercel deployment (same origin)
-                // For local development, use localhost:5000
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    return 'http://localhost:5000';
-                }
-                // For production (Vercel), use relative path
-                return '';
-            }
-
-            // Upload files to server
-            function uploadFilesToServer(files) {
-                const formData = new FormData();
-                const apiBaseUrl = getApiBaseUrl();
+            function handleFiles(files) {
+                const fileArray = Array.from(files);
                 
-                Array.from(files).forEach(file => {
-                    formData.append('files', file);
-                });
-
-                showNotification('info', 'Uploading files...');
-
-                fetch(`${apiBaseUrl}/api/upload`, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        uploadedFiles = data.files;
-                        updateFilesList();
-                        showNotification('success', `Uploaded ${data.files.length} files successfully`);
-                    } else {
-                        showNotification('error', data.error || 'Upload failed');
+                fileArray.forEach(file => {
+                    if (isValidFile(file)) {
+                        uploadedFiles.push(file);
+                        addFileToUI(file);
                     }
-                })
-                .catch(error => {
-                    showNotification('error', `Upload error: ${error.message}`);
                 });
+
+                if (uploadedFiles.length > 0) {
+                    filesList.classList.remove('hidden');
+                    convertBtn.disabled = false;
+                }
             }
 
-            // Get file icon
-            function getFileIcon(format) {
-                switch(format) {
-                    case 'pdf': return 'fa-file-pdf-o';
-                    case 'jpg':
-                    case 'jpeg': return 'fa-file-image-o';
-                    case 'png': return 'fa-file-image-o';
-                    case 'tif':
-                    case 'tiff': return 'fa-file-image-o';
-                    case 'svg': return 'fa-file-image-o';
+            function isValidFile(file) {
+                const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tif', '.tiff', '.svg'];
+                const maxSize = 500 * 1024 * 1024;
+                
+                const extension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedExtensions.includes(extension)) {
+                    showNotification('error', `File type ${extension} is not supported`);
+                    return false;
+                }
+                
+                if (file.size > maxSize) {
+                    showNotification('error', `File ${file.name} is too large`);
+                    return false;
+                }
+                
+                return true;
+            }
+
+            function addFileToUI(file) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between';
+                fileItem.dataset.index = uploadedFiles.length - 1;
+                
+                const fileName = file.name.length > 40 ? file.name.substring(0, 40) + '...' : file.name;
+                const fileSize = formatFileSize(file.size);
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                fileItem.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-600">
+                            <i class="fa ${getFileIcon(fileExtension)} text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="font-medium text-gray-800">${fileName}</p>
+                            <p class="text-sm text-gray-500">${fileSize}</p>
+                        </div>
+                    </div>
+                    <button class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors" onclick="removeFile(${uploadedFiles.length - 1})">
+                        <i class="fa fa-times"></i>
+                    </button>
+                `;
+                
+                filesContainer.appendChild(fileItem);
+            }
+
+            function getFileIcon(extension) {
+                switch(extension) {
+                    case '.pdf': return 'fa-file-pdf-o';
+                    case '.jpg':
+                    case '.jpeg': return 'fa-file-image-o';
+                    case '.png': return 'fa-file-image-o';
+                    case '.tif':
+                    case '.tiff': return 'fa-file-image-o';
+                    case '.svg': return 'fa-file-image-o';
                     default: return 'fa-file-o';
                 }
             }
 
-            // Remove file
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
             window.removeFile = function(index) {
                 uploadedFiles.splice(index, 1);
                 updateFilesList();
             }
 
-            // Update files list
             function updateFilesList() {
-                filesList.innerHTML = '';
+                filesContainer.innerHTML = '';
                 
                 if (uploadedFiles.length === 0) {
                     filesList.classList.add('hidden');
@@ -467,45 +320,42 @@
                     return;
                 }
                 
-                filesList.classList.remove('hidden');
-                convertBtn.disabled = false;
-                
                 uploadedFiles.forEach((file, index) => {
                     const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
+                    fileItem.className = 'file-item bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between';
                     fileItem.dataset.index = index;
                     
-                    const fileName = file.name.length > 30 ? file.name.substring(0, 30) + '...' : file.name;
+                    const fileName = file.name.length > 40 ? file.name.substring(0, 40) + '...' : file.name;
+                    const fileSize = formatFileSize(file.size);
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
                     
                     fileItem.innerHTML = `
                         <div class="flex items-center">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-primary">
-                                <i class="fa ${getFileIcon(file.format)}"></i>
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-600">
+                                <i class="fa ${getFileIcon(fileExtension)} text-xl"></i>
                             </div>
-                            <div class="ml-3">
-                                <p class="font-medium text-gray-900">${fileName}</p>
-                                <p class="text-xs text-gray-500">${file.size}</p>
+                            <div class="ml-4">
+                                <p class="font-medium text-gray-800">${fileName}</p>
+                                <p class="text-sm text-gray-500">${fileSize}</p>
                             </div>
                         </div>
-                        <button class="text-red-500 hover:text-red-700" onclick="removeFile(${index})">
+                        <button class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors" onclick="removeFile(${index})">
                             <i class="fa fa-times"></i>
                         </button>
                     `;
                     
-                    filesList.appendChild(fileItem);
+                    filesContainer.appendChild(fileItem);
                 });
             }
 
-            // Clear all files
             clearBtn.addEventListener('click', function() {
                 uploadedFiles = [];
-                filesList.innerHTML = '';
+                filesContainer.innerHTML = '';
                 filesList.classList.add('hidden');
                 convertBtn.disabled = true;
                 downloadSection.classList.add('hidden');
             });
 
-            // Target format change
             targetFormat.addEventListener('change', function() {
                 if (this.value === 'jpg') {
                     dpiSettings.classList.remove('hidden');
@@ -514,7 +364,6 @@
                 }
             });
 
-            // DPI slider and input sync
             dpiSlider.addEventListener('input', function() {
                 dpiInput.value = this.value;
             });
@@ -528,7 +377,6 @@
                 dpiSlider.value = value;
             });
 
-            // Start conversion
             convertBtn.addEventListener('click', function() {
                 if (uploadedFiles.length === 0) {
                     showNotification('error', 'Please upload at least one file');
@@ -538,8 +386,7 @@
                 startConversion();
             });
 
-            // Start conversion process
-            function startConversion() {
+            async function startConversion() {
                 conversionInProgress = true;
                 convertBtn.disabled = true;
                 clearBtn.disabled = true;
@@ -547,97 +394,105 @@
                 progressArea.classList.remove('hidden');
                 downloadSection.classList.add('hidden');
 
-                const conversionData = {
-                    files: uploadedFiles,
-                    target_format: targetFormat.value,
-                    dpi: parseInt(dpiInput.value)
-                };
-                const apiBaseUrl = getApiBaseUrl();
+                let convertedFiles = [];
+                const totalFiles = uploadedFiles.length;
 
-                showNotification('info', 'Starting conversion...');
+                for (let i = 0; i < uploadedFiles.length; i++) {
+                    const file = uploadedFiles[i];
+                    const progress = Math.round((i / totalFiles) * 100);
+                    
+                    progressFill.style.width = progress + '%';
+                    progressPercentage.textContent = progress + '%';
+                    progressMessage.textContent = `Converting: ${file.name}...`;
 
-                fetch(`${apiBaseUrl}/api/convert`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(conversionData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        currentTaskId = data.task_id;
-                        startStatusCheck();
-                    } else {
-                        conversionInProgress = false;
-                        convertBtn.disabled = false;
-                        clearBtn.disabled = false;
-                        cancelBtn.classList.add('hidden');
-                        progressArea.classList.add('hidden');
-                        showNotification('error', data.error || 'Conversion failed to start');
+                    try {
+                        const converted = await convertFile(file, targetFormat.value);
+                        convertedFiles.push(converted);
+                    } catch (error) {
+                        showNotification('error', `Error converting ${file.name}: ${error.message}`);
                     }
-                })
-                .catch(error => {
-                    conversionInProgress = false;
-                    convertBtn.disabled = false;
-                    clearBtn.disabled = false;
-                    cancelBtn.classList.add('hidden');
-                    progressArea.classList.add('hidden');
-                    showNotification('error', `Conversion error: ${error.message}`);
+
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                progressFill.style.width = '100%';
+                progressPercentage.textContent = '100%';
+                progressMessage.textContent = 'Finalizing...';
+
+                setTimeout(() => {
+                    showDownloads(convertedFiles);
+                }, 500);
+            }
+
+            async function convertFile(file, targetFormat) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = async function(e) {
+                        try {
+                            const dataUrl = e.target.result;
+                            const blob = await convertImage(dataUrl, targetFormat, file.name);
+                            resolve({
+                                name: file.name.replace(/\\.[^/.]+$/, '') + '.' + targetFormat,
+                                blob: blob
+                            });
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    
+                    reader.onerror = function() {
+                        reject(new Error('Failed to read file'));
+                    };
+                    
+                    reader.readAsDataURL(file);
                 });
             }
 
-            // Start checking conversion status
-            function startStatusCheck() {
-                statusCheckInterval = setInterval(() => {
-                    checkConversionStatus();
-                }, 1000);
-            }
-
-            // Check conversion status
-            function checkConversionStatus() {
-                if (!currentTaskId) return;
-                const apiBaseUrl = getApiBaseUrl();
-
-                fetch(`${apiBaseUrl}/api/status/${currentTaskId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const task = data.task;
-                            
-                            progressFill.style.width = task.progress + '%';
-                            progressPercentage.textContent = task.progress + '%';
-                            progressMessage.textContent = task.message;
-
-                            if (task.status === 'completed') {
-                                clearInterval(statusCheckInterval);
-                                showDownloads(task.output_files, apiBaseUrl);
-                            } else if (task.status === 'failed') {
-                                clearInterval(statusCheckInterval);
-                                conversionInProgress = false;
-                                convertBtn.disabled = false;
-                                clearBtn.disabled = false;
-                                cancelBtn.classList.add('hidden');
-                                progressArea.classList.add('hidden');
-                                showNotification('error', `Conversion failed: ${task.error}`);
-                            } else if (task.status === 'cancelled') {
-                                clearInterval(statusCheckInterval);
-                                conversionInProgress = false;
-                                convertBtn.disabled = false;
-                                clearBtn.disabled = false;
-                                cancelBtn.classList.add('hidden');
-                                progressArea.classList.add('hidden');
-                                showNotification('info', 'Conversion cancelled');
-                            }
+            async function convertImage(dataUrl, format, originalName) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        let mimeType = 'image/png';
+                        if (format === 'jpg' || format === 'jpeg') {
+                            mimeType = 'image/jpeg';
+                        } else if (format === 'png') {
+                            mimeType = 'image/png';
+                        } else if (format === 'webp') {
+                            mimeType = 'image/webp';
                         }
-                    })
-                    .catch(error => {
-                        console.error('Status check error:', error);
-                    });
+                        
+                        canvas.toBlob(function(blob) {
+                            resolve(blob);
+                        }, mimeType, 0.95);
+                    };
+                    img.onerror = function() {
+                        const blob = dataURLtoBlob(dataUrl);
+                        resolve(blob);
+                    };
+                    img.src = dataUrl;
+                });
             }
 
-            // Show download section
-            function showDownloads(outputFiles, apiBaseUrl) {
+            function dataURLtoBlob(dataurl) {
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], { type: mime });
+            }
+
+            function showDownloads(files) {
                 conversionInProgress = false;
                 convertBtn.disabled = false;
                 clearBtn.disabled = false;
@@ -645,27 +500,26 @@
                 progressArea.classList.add('hidden');
                 downloadSection.classList.remove('hidden');
 
-                // Clear previous downloads
                 downloadItems.innerHTML = '';
 
-                // Add download items
-                outputFiles.forEach(filename => {
+                files.forEach(file => {
+                    const url = URL.createObjectURL(file.blob);
                     const downloadItem = document.createElement('div');
-                    downloadItem.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200';
+                    downloadItem.className = 'bg-gradient-to-r from-green-50 to-green-100 p-5 rounded-xl border border-green-200';
                     
                     downloadItem.innerHTML = `
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
-                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                                    <i class="fa fa-file-o"></i>
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-200 to-green-300 rounded-xl flex items-center justify-center text-green-600">
+                                    <i class="fa fa-file-o text-xl"></i>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="font-medium text-gray-900">${filename}</p>
-                                    <p class="text-xs text-gray-500">Converted successfully</p>
+                                <div class="ml-4">
+                                    <p class="font-semibold text-gray-800">${file.name}</p>
+                                    <p class="text-sm text-green-600">Converted successfully</p>
                                 </div>
                             </div>
-                            <a href="${apiBaseUrl}/api/download/${filename}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                <i class="fa fa-download mr-1"></i> Download
+                            <a href="${url}" download="${file.name}" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg hover:shadow-xl">
+                                <i class="fa fa-download mr-2"></i> Download
                             </a>
                         </div>
                     `;
@@ -676,48 +530,31 @@
                 showNotification('success', 'Conversion completed successfully!');
             }
 
-            // Cancel conversion
             cancelBtn.addEventListener('click', function() {
-                if (!currentTaskId) return;
-                const apiBaseUrl = getApiBaseUrl();
-
-                fetch(`${apiBaseUrl}/api/cancel/${currentTaskId}`, {
-                    method: 'POST'
-                })
-                .then(() => {
-                    if (statusCheckInterval) {
-                        clearInterval(statusCheckInterval);
-                    }
-                    conversionInProgress = false;
-                    currentTaskId = null;
-                    convertBtn.disabled = false;
-                    clearBtn.disabled = false;
-                    cancelBtn.classList.add('hidden');
-                    progressArea.classList.add('hidden');
-                    showNotification('info', 'Conversion cancelled');
-                })
-                .catch(error => {
-                    showNotification('error', `Cancellation error: ${error.message}`);
-                });
+                conversionInProgress = false;
+                convertBtn.disabled = false;
+                clearBtn.disabled = false;
+                cancelBtn.classList.add('hidden');
+                progressArea.classList.add('hidden');
+                showNotification('info', 'Conversion cancelled');
             });
 
-            // Show notification
             function showNotification(type, message) {
                 const notification = document.createElement('div');
-                notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full opacity-0`;
+                notification.className = `fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transition-all duration-300 transform translate-x-full opacity-0`;
                 
                 let bgColor, icon;
                 switch(type) {
                     case 'success':
-                        bgColor = 'bg-green-500';
+                        bgColor = 'bg-gradient-to-r from-green-500 to-green-600';
                         icon = 'fa-check-circle';
                         break;
                     case 'error':
-                        bgColor = 'bg-red-500';
+                        bgColor = 'bg-gradient-to-r from-red-500 to-red-600';
                         icon = 'fa-exclamation-circle';
                         break;
                     case 'info':
-                        bgColor = 'bg-blue-500';
+                        bgColor = 'bg-gradient-to-r from-blue-500 to-blue-600';
                         icon = 'fa-info-circle';
                         break;
                 }
@@ -725,45 +562,26 @@
                 notification.className += ` ${bgColor} text-white`;
                 notification.innerHTML = `
                     <div class="flex items-center">
-                        <i class="fa ${icon} mr-2"></i>
-                        <span>${message}</span>
+                        <i class="fa ${icon} mr-3 text-xl"></i>
+                        <span class="font-medium">${message}</span>
                     </div>
                 `;
                 
                 document.body.appendChild(notification);
                 
-                // Show notification
                 setTimeout(() => {
                     notification.classList.remove('translate-x-full', 'opacity-0');
                 }, 100);
                 
-                // Hide notification
                 setTimeout(() => {
                     notification.classList.add('translate-x-full', 'opacity-0');
                     setTimeout(() => {
-                        document.body.removeChild(notification);
-                    }, 300);
-                }, 3000);
-            }
-
-            // Initialize
-            function initialize() {
-                // Load supported formats
-                const apiBaseUrl = getApiBaseUrl();
-                fetch(`${apiBaseUrl}/api/formats`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            console.log('Supported formats loaded:', data.formats);
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
                         }
-                    })
-                    .catch(error => {
-                        console.error('Failed to load formats:', error);
-                    });
+                    }, 300);
+                }, 4000);
             }
-
-            // Initialize the application
-            initialize();
         });
     </script>
 </body>
