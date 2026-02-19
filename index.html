@@ -427,13 +427,20 @@
             async function convertFile(file, targetFormat) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                    
+                    // Special handling for SVG files
+                    if (fileExtension === '.svg') {
+                        handleSVGConversion(file, targetFormat, resolve, reject);
+                        return;
+                    }
                     
                     reader.onload = async function(e) {
                         try {
                             const dataUrl = e.target.result;
                             const blob = await convertImage(dataUrl, targetFormat, file.name);
                             resolve({
-                                name: file.name.replace(/\\.[^/.]+$/, '') + '.' + targetFormat,
+                                name: file.name.replace(/\.[^/.]+$/, '') + '.' + targetFormat,
                                 blob: blob
                             });
                         } catch (error) {
@@ -447,6 +454,98 @@
                     
                     reader.readAsDataURL(file);
                 });
+            }
+
+            function handleSVGConversion(file, targetFormat, resolve, reject) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const svgDataUrl = e.target.result;
+                        const blob = await convertSVGToImage(svgDataUrl, targetFormat, file.name);
+                        resolve({
+                            name: file.name.replace(/\.[^/.]+$/, '') + '.' + targetFormat,
+                            blob: blob
+                        });
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = function() {
+                    reject(new Error('Failed to read SVG file'));
+                };
+                reader.readAsText(file);
+            }
+
+            async function convertSVGToImage(svgDataUrl, format, originalName) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    
+                    img.onload = function() {
+                        // Create canvas with appropriate dimensions
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width || 800;
+                        canvas.height = img.height || 600;
+                        
+                        const ctx = canvas.getContext('2d');
+                        // Fill with white background (for transparency)
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0);
+                        
+                        let mimeType = 'image/png';
+                        if (format === 'jpg' || format === 'jpeg') {
+                            mimeType = 'image/jpeg';
+                        } else if (format === 'tiff' || format === 'tif') {
+                            // Convert to PNG for TIFF (browser doesn't natively support TIFF)
+                            mimeType = 'image/png';
+                        }
+                        
+                        canvas.toBlob(function(blob) {
+                            resolve(blob);
+                        }, mimeType, 0.95);
+                    };
+                    
+                    img.onerror = function() {
+                        // Try another approach for SVG
+                        trySVGAsDataUrl(svgDataUrl, format, resolve, reject);
+                    };
+                    
+                    // Set cross-origin for SVG
+                    img.crossOrigin = 'anonymous';
+                    img.src = svgDataUrl;
+                });
+            }
+
+            function trySVGAsDataUrl(svgContent, format, resolve, reject) {
+                // If direct loading fails, try as data URL
+                const dataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgContent)));
+                const img = new Image();
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width || 800;
+                    canvas.height = img.height || 600;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    
+                    let mimeType = 'image/png';
+                    if (format === 'jpg' || format === 'jpeg') {
+                        mimeType = 'image/jpeg';
+                    }
+                    
+                    canvas.toBlob(function(blob) {
+                        resolve(blob);
+                    }, mimeType, 0.95);
+                };
+                
+                img.onerror = function() {
+                    reject(new Error('Failed to convert SVG'));
+                };
+                
+                img.src = dataUrl;
             }
 
             async function convertImage(dataUrl, format, originalName) {
