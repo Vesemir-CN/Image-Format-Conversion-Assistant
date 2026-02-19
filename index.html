@@ -396,9 +396,20 @@
                 fileInput.click();
             });
 
+            // Get API base URL
+            function getApiBaseUrl() {
+                // For production deployment on Vercel
+                if (window.location.hostname === 'imageformatconversionassistant.lol') {
+                    return 'https://imageformatconversionassistant.lol';
+                }
+                // For local development
+                return 'http://localhost:5000';
+            }
+
             // Upload files to server
             function uploadFilesToServer(files) {
                 const formData = new FormData();
+                const apiBaseUrl = getApiBaseUrl();
                 
                 Array.from(files).forEach(file => {
                     formData.append('files', file);
@@ -406,7 +417,7 @@
 
                 showNotification('info', 'Uploading files...');
 
-                fetch('/api/upload', {
+                fetch(`${apiBaseUrl}/api/upload`, {
                     method: 'POST',
                     body: formData
                 })
@@ -540,10 +551,11 @@
                     target_format: targetFormat.value,
                     dpi: parseInt(dpiInput.value)
                 };
+                const apiBaseUrl = getApiBaseUrl();
 
                 showNotification('info', 'Starting conversion...');
 
-                fetch('/api/convert', {
+                fetch(`${apiBaseUrl}/api/convert`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -584,8 +596,9 @@
             // Check conversion status
             function checkConversionStatus() {
                 if (!currentTaskId) return;
+                const apiBaseUrl = getApiBaseUrl();
 
-                fetch(`/api/status/${currentTaskId}`)
+                fetch(`${apiBaseUrl}/api/status/${currentTaskId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -597,7 +610,7 @@
 
                             if (task.status === 'completed') {
                                 clearInterval(statusCheckInterval);
-                                showDownloads(task.output_files);
+                                showDownloads(task.output_files, apiBaseUrl);
                             } else if (task.status === 'failed') {
                                 clearInterval(statusCheckInterval);
                                 conversionInProgress = false;
@@ -623,7 +636,7 @@
             }
 
             // Show download section
-            function showDownloads(outputFiles) {
+            function showDownloads(outputFiles, apiBaseUrl) {
                 conversionInProgress = false;
                 convertBtn.disabled = false;
                 clearBtn.disabled = false;
@@ -650,7 +663,7 @@
                                     <p class="text-xs text-gray-500">Converted successfully</p>
                                 </div>
                             </div>
-                            <a href="/api/download/${filename}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <a href="${apiBaseUrl}/api/download/${filename}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 <i class="fa fa-download mr-1"></i> Download
                             </a>
                         </div>
@@ -665,8 +678,9 @@
             // Cancel conversion
             cancelBtn.addEventListener('click', function() {
                 if (!currentTaskId) return;
+                const apiBaseUrl = getApiBaseUrl();
 
-                fetch(`/api/cancel/${currentTaskId}`, {
+                fetch(`${apiBaseUrl}/api/cancel/${currentTaskId}`, {
                     method: 'POST'
                 })
                 .then(() => {
@@ -734,7 +748,8 @@
             // Initialize
             function initialize() {
                 // Load supported formats
-                fetch('/api/formats')
+                const apiBaseUrl = getApiBaseUrl();
+                fetch(`${apiBaseUrl}/api/formats`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {

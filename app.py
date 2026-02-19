@@ -18,8 +18,16 @@ from converter import ConversionEngine
 from file_processor import FileInfo, FileProcessor
 from config import MAX_FILE_SIZE_MB
 
+# 尝试导入Flask-Cors，如果失败则不使用
+try:
+    from flask_cors import CORS
+except ImportError:
+    CORS = None
+
 app = Flask(__name__)
-CORS(app)
+# 仅在CORS可用时启用
+if CORS:
+    CORS(app)
 
 # Configuration
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE_MB * 1024 * 1024
