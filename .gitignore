@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Virtual environments
+venv/
+env/
+
+# Testing
+pytest_cache/
+.tox/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+uploads/
+outputs/
+
+# Windows
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.pdb
+*.ilk
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Package manager
+node_modules/
+.npm
+.yarn-integrity
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Large files
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.tif
+*.tiff
+*.svg
