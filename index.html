@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scientific Image Processing Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Initialize PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -429,6 +434,12 @@
                     const reader = new FileReader();
                     const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
                     
+                    // Special handling for PDF files
+                    if (fileExtension === '.pdf') {
+                        handlePDFConversion(file, targetFormat, resolve, reject);
+                        return;
+                    }
+                    
                     // Special handling for SVG files
                     if (fileExtension === '.svg') {
                         handleSVGConversion(file, targetFormat, resolve, reject);
@@ -454,6 +465,73 @@
                     
                     reader.readAsDataURL(file);
                 });
+            }
+
+            function handlePDFConversion(file, targetFormat, resolve, reject) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        const blob = await convertPDFToImage(arrayBuffer, targetFormat, file.name);
+                        resolve({
+                            name: file.name.replace(/\.[^/.]+$/, '') + '.' + targetFormat,
+                            blob: blob
+                        });
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = function() {
+                    reject(new Error('Failed to read PDF file'));
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            async function convertPDFToImage(arrayBuffer, format, originalName) {
+                try {
+                    // Load PDF document
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    
+                    // Get the first page
+                    const page = await pdf.getPage(1);
+                    
+                    // Get viewport for rendering
+                    const scale = 2.0; // Higher scale for better quality
+                    const viewport = page.getViewport({ scale: scale });
+                    
+                    // Create canvas
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Render PDF page to canvas
+                    await page.render({
+                        canvasContext: ctx,
+                        viewport: viewport
+                    }).promise;
+                    
+                    // Convert canvas to blob
+                    return new Promise((resolve, reject) => {
+                        let mimeType = 'image/png';
+                        if (format === 'jpg' || format === 'jpeg') {
+                            mimeType = 'image/jpeg';
+                        } else if (format === 'tiff' || format === 'tif') {
+                            mimeType = 'image/png';
+                        }
+                        
+                        canvas.toBlob(function(blob) {
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error('Failed to convert PDF to image'));
+                            }
+                        }, mimeType, 0.95);
+                    });
+                } catch (error) {
+                    throw new Error('PDF conversion failed: ' + error.message);
+                }
             }
 
             function handleSVGConversion(file, targetFormat, resolve, reject) {
