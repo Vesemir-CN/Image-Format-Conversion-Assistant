@@ -11,8 +11,7 @@ import tempfile
 import threading
 import json
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file, render_template
-from flask_cors import CORS
+from flask import Flask, request, jsonify, send_file
 
 from converter import ConversionEngine
 from file_processor import FileInfo, FileProcessor
@@ -61,7 +60,12 @@ class ConversionTask:
 @app.route('/')
 def index():
     """Serve the main HTML file"""
-    return render_template('index.html')
+    try:
+        # Try to read the index.html file directly
+        with open('index.html', 'r', encoding='utf-8') as f:
+            return f.read(), 200, {'Content-Type': 'text/html'}
+    except Exception as e:
+        return f'Error loading index.html: {str(e)}', 500
 
 
 @app.route('/api/upload', methods=['POST'])
