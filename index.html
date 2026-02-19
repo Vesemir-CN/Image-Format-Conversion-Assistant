@@ -398,12 +398,13 @@
 
             // Get API base URL
             function getApiBaseUrl() {
-                // For production deployment on Vercel
-                if (window.location.hostname === 'imageformatconversionassistant.lol') {
-                    return 'https://imageformatconversionassistant.lol';
+                // Use relative path for Vercel deployment (same origin)
+                // For local development, use localhost:5000
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    return 'http://localhost:5000';
                 }
-                // For local development
-                return 'http://localhost:5000';
+                // For production (Vercel), use relative path
+                return '';
             }
 
             // Upload files to server
