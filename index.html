@@ -180,6 +180,17 @@
                     </div>
                 </div>
 
+                <!-- Custom Arrangement Prompt -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fa fa-search text-purple-600 mr-2"></i>Custom Arrangement (Optional)
+                    </label>
+                    <input type="text" id="arrangement-prompt" 
+                        placeholder="e.g., Put UMAP plots in front, arrange by figure type..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Describe your preferred arrangement order</p>
+                </div>
+
                 <!-- Generate Button -->
                 <button id="generate-btn" onclick="generateCollage()" disabled class="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
                         <i class="fa fa-magic mr-2"></i> Generate Collage
@@ -490,6 +501,9 @@
             document.getElementById('collage-progress-area').classList.remove('hidden');
             document.getElementById('collage-result').classList.add('hidden');
             
+            // Get custom arrangement prompt
+            const customPrompt = document.getElementById('arrangement-prompt').value;
+            
             try {
                 // Step 1: Convert all to 600 DPI JPEG
                 updateCollageProgress(10, 'Converting images to 600 DPI JPEG...');
@@ -505,7 +519,7 @@
 
                 // Step 2: AI Analysis for smart arrangement
                 updateCollageProgress(50, 'AI analyzing images for smart arrangement...');
-                const analyzedImages = await analyzeImagesWithAI(images);
+                const analyzedImages = await analyzeImagesWithAI(images, customPrompt);
                 
                 // Sort images based on AI analysis
                 analyzedImages.sort((a, b) => a.order - b.order);
@@ -539,9 +553,18 @@
             document.getElementById('collage-progress-message').textContent = message;
         }
 
-        async function analyzeImagesWithAI(images) {
+        async function analyzeImagesWithAI(images, customPrompt = '') {
             const results = [];
             const totalImages = images.length;
+            
+            // Build the prompt with custom instructions
+            let promptBase = `Analyze this scientific image and tell me: 1) What type of figure is it (e.g., bar chart, line plot, UMAP, heatmap, microscopy photo, flowchart)? 2) What does it show?`;
+            
+            if (customPrompt && customPrompt.trim()) {
+                promptBase += ` IMPORTANT: User's custom arrangement request: "${customPrompt}". Consider this when determining the order.`;
+            }
+            
+            promptBase += ` Respond in this exact JSON format: {"order": N, "description": "X"} where N is the logical sequence number from 1 to ${totalImages}.`;
             
             for (let i = 0; i < totalImages; i++) {
                 const progress = 50 + Math.round((i / totalImages) * 30);
@@ -551,7 +574,7 @@
                     const blob = images[i].blob;
                     const base64 = await blobToBase64(blob);
                     
-                    const prompt = `Analyze this scientific image and tell me: 1) What type of figure is it (e.g., bar chart, line plot, microscopy photo, flowchart)? 2) What does it show? Respond in this exact JSON format: {"order": N, "description": "X"} where N is the logical sequence number from 1 to ${totalImages}. For example, if this is the first figure in a paper, order should be 1.`;
+                    const prompt = promptBase;
                     
                     console.log('Calling AI for image', i+1);
                     

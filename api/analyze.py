@@ -25,55 +25,68 @@ def handler(event, context):
             'Authorization': 'Bearer ' + API_KEY
         }
         
-        payload = {
-            'model': ENDPOINT_ID,
-            'input': [
-                {
-                    'role': 'user',
-                    'content': [
+        # Try both payload formats
+        payloads = [
+            {
+                'model': ENDPOINT_ID,
+                'input': {
+                    'messages': [
                         {
-                            'type': 'input_image',
-                            'image_url': {
-                                'url': 'data:image/jpeg;base64,' + image_base64
-                            }
-                        },
-                        {
-                            'type': 'input_text',
-                            'text': prompt
+                            'role': 'user',
+                            'content': [
+                                {'type': 'image_url', 'image_url': {'url': 'data:image/jpeg;base64,' + image_base64}},
+                                {'type': 'text', 'text': prompt}
+                            ]
                         }
                     ]
                 }
-            ]
-        }
-        
-        response = requests.post(url, json=payload, headers=headers, timeout=60)
-        
-        if response.status_code != 200:
-            return {
-                'statusCode': response.status_code,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'API error', 'details': response.text})
+            },
+            {
+                'model': ENDPOINT_ID,
+                'input': [
+                    {
+                        'role': 'user',
+                        'content': [
+                            {'type': 'input_image', 'image_url': 'data:image/jpeg;base64,' + image_base64},
+                            {'type': 'input_text', 'text': prompt}
+                        ]
+                    }
+                ]
             }
+        ]
         
-        result = response.json()
-        
-        text = ''
-        if 'output' in result:
-            output = result['output']
-            if isinstance(output, list) and len(output) > 0:
-                for item in output:
-                    if 'content' in item:
-                        for content_item in item['content']:
-                            if content_item.get('type') == 'output_text':
-                                text += content_item.get('text', '')
-        
-        if not text:
-            text = str(result)
+        for payload in payloads:
+            try:
+                response = requests.post(url, json=payload, headers=headers, timeout=60)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    text = ''
+                    if 'output' in result:
+                        output = result['output']
+                        if isinstance(output, list) and len(output) > 0:
+                            for item in output:
+                                if 'content' in item:
+                                    for content_item in item['content']:
+                                        if content_item.get('type') == 'output_text':
+                                            text += content_item.get('text', '')
+                    
+                    if not text:
+                        text = str(result)
+                    
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'description': text})
+                    }
+            except Exception as e:
+                continue
         
         return {
-            'statusCode': 200,
+            'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'description': text})
+            'body': json.dumps({'error': 'API call failed'})
         }
         
     except Exception as e:
