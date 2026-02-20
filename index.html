@@ -37,7 +37,7 @@
                         <i class="fa fa-exchange mr-2"></i>Format Convert
                     </button>
                     <button onclick="switchTab('collage')" id="tab-collage" class="px-5 py-2 font-medium transition-colors tab-inactive">
-                        <i class="fa fa-th-large mr-2"></i>AI Collage
+                        <i class="fa fa-th-large mr-2"></i>Image Collage
                     </button>
                 </div>
             </div>
@@ -124,24 +124,24 @@
             </div>
         </div>
 
-        <!-- Page 2: AI Collage -->
+        <!-- Page 2: Image Collage -->
         <div id="page-collage" class="hidden">
             <header class="text-center mb-10">
-                <h1 class="text-4xl font-bold text-gray-900 mb-3">AI Image Collage</h1>
+                <h1 class="text-4xl font-bold text-gray-900 mb-3">Image Collage</h1>
                 <p class="text-gray-600 text-lg">Automatically convert and arrange images into a beautiful collage</p>
             </header>
 
             <div class="bg-white rounded-3xl shadow-2xl p-8">
                 <!-- Upload Area for Collage -->
                 <div class="mb-8">
-                    <label class="block text-sm font-semibold text-gray-700 mb-3">Upload Images (Max 10)</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Upload Images (Max 24)</label>
                     <div id="drop-area-collage" class="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 hover:border-purple-500 hover:bg-purple-50">
                         <input type="file" id="file-input-collage" multiple accept=".pdf,.jpg,.jpeg,.png,.tif,.tiff,.svg" class="hidden">
                         <div class="w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fa fa-images text-4xl text-purple-600"></i>
                         </div>
                         <p class="text-gray-700 font-medium mb-2">Drag & drop files here</p>
-                        <p class="text-gray-500 text-sm mb-3">Max 10 images, PDF/PNG/JPG/SVG supported</p>
+                        <p class="text-gray-500 text-sm mb-3">Max 24 images, PDF/PNG/JPG/SVG supported</p>
                         <span class="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Auto convert to 600 DPI JPEG</span>
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                 <div id="collage-files-list" class="mb-8 hidden">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-semibold text-gray-700">
-                            <i class="fa fa-image text-purple-600 mr-2"></i>Selected Images (<span id="collage-count">0</span>/10)
+                            <i class="fa fa-image text-purple-600 mr-2"></i>Selected Images (<span id="collage-count">0</span>/24)
                         </h3>
                         <button onclick="clearCollageFiles()" class="text-sm text-red-500 hover:text-red-700">
                             <i class="fa fa-trash mr-1"></i> Clear All
@@ -159,10 +159,10 @@
                     <div id="collage-files-container" class="space-y-3"></div>
                 </div>
 
-                <!-- AI Settings -->
+                <!-- Image Settings -->
                 <div class="bg-purple-50 rounded-2xl p-6 mb-8">
                     <h3 class="font-semibold text-gray-800 mb-4">
-                        <i class="fa fa-robot text-purple-600 mr-2"></i>AI Arrangement Settings
+                        <i class="fa fa-images text-purple-600 mr-2"></i>Image Arrangement Settings
                     </h3>
                     
                     <div class="mb-4">
@@ -170,7 +170,7 @@
                         <div class="flex gap-4">
                             <label class="flex items-center cursor-pointer">
                                 <input type="radio" name="arrange-method" value="auto" checked class="mr-2">
-                                <span class="text-gray-700">AI Auto Detect</span>
+                                <span class="text-gray-700">Auto Detect (Smart Analysis)</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input type="radio" name="arrange-method" value="manual" class="mr-2">
@@ -181,17 +181,8 @@
 
                     <!-- Manual Input Section -->
                     <div id="manual-input-section" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Enter descriptions for each image (one per line)</label>
-                        <textarea id="image-descriptions" rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="Image 1: UMAP cluster analysis&#10;Image 2: Cell type distribution&#10;Image 3: Gene expression heatmap"></textarea>
-                    </div>
-
-                    <!-- API Key Section -->
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fa fa-key text-purple-600 mr-1"></i> Doubao API Key
-                        </label>
-                        <input type="password" id="api-key" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="Enter your Doubao API key">
-                        <p class="text-xs text-gray-500 mt-1">Default API: 483e4f2b-fe23-4ab3-a3f3-ab66c279f748</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Image Descriptions (one per line)</label>
+                        <textarea id="image-descriptions" rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="a: UMAP cluster analysis&#10;b: Cell type distribution&#10;c: Gene expression heatmap"></textarea>
                     </div>
                 </div>
 
@@ -203,7 +194,8 @@
                             <option value="2">2 Columns</option>
                             <option value="3" selected>3 Columns</option>
                             <option value="4">4 Columns</option>
-                            <option value="5">5 Columns</option>
+                            <option value="6">6 Columns</option>
+                            <option value="8">8 Columns</option>
                         </select>
                     </div>
                     <div>
@@ -219,8 +211,8 @@
 
                 <!-- Generate Button -->
                 <button id="generate-btn" onclick="generateCollage()" disabled class="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
-                    <i class="fa fa-magic mr-2"></i> Generate AI Collage
-                </button>
+                        <i class="fa fa-magic mr-2"></i> Generate Collage
+                    </button>
 
                 <!-- Progress -->
                 <div id="collage-progress-area" class="mt-8 hidden">
@@ -413,14 +405,31 @@
         }
 
         function canvasToJpeg(canvas, dpi) {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 const scale = dpi / 96;
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = canvas.width * scale;
                 tempCanvas.height = canvas.height * scale;
                 const ctx = tempCanvas.getContext('2d');
                 ctx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-                tempCanvas.toBlob(b => resolve(b), 'image/jpeg', 0.95);
+                
+                // Convert to blob directly
+                tempCanvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        // Fallback: use data URL and convert to blob
+                        const dataURL = tempCanvas.toDataURL('image/jpeg', 0.95);
+                        const byteString = atob(dataURL.split(',')[1]);
+                        const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+                        const ab = new ArrayBuffer(byteString.length);
+                        const ia = new Uint8Array(ab);
+                        for (let i = 0; i < byteString.length; i++) {
+                            ia[i] = byteString.charCodeAt(i);
+                        }
+                        resolve(new Blob([ab], { type: mimeString }));
+                    }
+                }, 'image/jpeg', 0.95);
             });
         }
 
@@ -451,7 +460,7 @@
             });
         }
 
-        // ============ Page 2: AI Collage ============
+        // ============ Page 2: Image Collage ============
         let collageFiles = [];
         
         const dropAreaCollage = document.getElementById('drop-area-collage');
@@ -467,7 +476,7 @@
         function handleCollageFiles(files) {
             const valid = ['.pdf','.jpg','.jpeg','.png','.tif','.tiff','.svg'];
             Array.from(files).forEach(f => {
-                if (collageFiles.length >= 10) return;
+                if (collageFiles.length >= 24) return;
                 const ext = '.' + f.name.split('.').pop().toLowerCase();
                 if (valid.includes(ext)) collageFiles.push(f);
             });
@@ -481,7 +490,7 @@
             document.getElementById('collage-count').textContent = collageFiles.length;
             document.getElementById('generate-btn').disabled = collageFiles.length === 0;
             
-            const letters = 'abcdefghij';
+            const letters = 'abcdefghijklmnopqrstuvwx';
             collageFiles.forEach((f, i) => {
                 const div = document.createElement('div');
                 div.className = 'file-item bg-purple-50 p-4 rounded-xl flex justify-between items-center';
@@ -509,8 +518,6 @@
             });
         });
 
-        document.getElementById('api-key').value = '483e4f2b-fe23-4ab3-a3f3-ab66c279f748';
-
         async function generateCollage() {
             if (collageFiles.length === 0) return;
             
@@ -523,7 +530,7 @@
                 // Step 1: Convert all to 600 DPI JPEG
                 updateCollageProgress(10, 'Converting images to 600 DPI JPEG...');
                 const images = [];
-                const letters = 'abcdefghij';
+                const letters = 'abcdefghijklmnopqrstuvwx';
                 
                 for (let i = 0; i < collageFiles.length; i++) {
                     const progress = 10 + Math.round((i / collageFiles.length) * 30);
@@ -532,8 +539,8 @@
                     images.push({ blob, letter: letters[i] });
                 }
 
-                // Step 2: Get AI arrangement or use manual
-                updateCollageProgress(45, 'Analyzing image content...');
+                // Step 2: Get descriptions - auto or manual
+                updateCollageProgress(45, 'Processing image descriptions...');
                 let descriptions = [];
                 const method = document.querySelector('input[name="arrange-method"]:checked').value;
                 
@@ -568,62 +575,60 @@
         }
 
         async function analyzeImagesWithAI(images) {
-            const apiKey = document.getElementById('api-key').value.trim();
+            const apiKey = '483e4f2b-fe23-4ab3-a3f3-ab66c279f748';
             const descriptions = [];
             
-            // Convert images to base64 for API
-            const base64Images = await Promise.all(images.map(async (img, i) => {
-                return new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.readAsDataURL(img.blob);
-                });
-            }));
-
-            // Call Doubao API for each image
             for (let i = 0; i < images.length; i++) {
-                updateCollageProgress(45 + Math.round((i / images.length) * 20), `AI analyzing image ${i+1}/${images.length}...`);
-                
-                const prompt = `Analyze this scientific image and provide a brief description (5-15 words) of what it shows. Focus on: data visualization type, what the axes represent, main patterns or findings. Example: "UMAP clustering showing cell type distribution in mouse brain tissue"`;
+                updateCollageProgress(45 + Math.round((i / images.length) * 20), `Analyzing image ${i+1}/${images.length}...`);
                 
                 try {
-                    const desc = await callDoubaoAPI(apiKey, base64Images[i], prompt);
-                    descriptions.push(`${images[i].letter}) ${desc}`);
+                    const imgData = images[i];
+                    const blob = imgData.blob;
+                    
+                    // Convert blob to base64
+                    const base64 = await blobToBase64(blob);
+                    
+                    const prompt = `Analyze this scientific image and provide a brief description (5-15 words) of what it shows. Focus on: data visualization type, what the axes represent, main patterns or findings.`;
+                    
+                    const desc = await callDoubaoAPI(apiKey, base64, prompt);
+                    descriptions.push(`${imgData.letter}) ${desc}`);
                 } catch (e) {
-                    descriptions.push(`${images[i].letter}) Image ${i+1}`);
+                    console.error('Error analyzing image:', e);
+                    descriptions.push(`${images[i].letter}) ${collageFiles[i].name.replace(/\.[^/.]+$/, '')}`);
                 }
             }
             
             return descriptions;
         }
 
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result;
+                    resolve(result.split(',')[1]);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
         async function callDoubaoAPI(apiKey, imageBase64, prompt) {
-            const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation', {
+            const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + apiKey
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: 'qwen-vl-plus',
-                    input: {
-                        messages: [
-                            {
-                                role: 'user',
-                                content: [
-                                    { image: 'data:image/jpeg;base64,' + imageBase64 },
-                                    { text: prompt }
-                                ]
-                            }
-                        ]
-                    }
+                    image: imageBase64,
+                    prompt: prompt
                 })
             });
             
-            if (!response.ok) throw new Error('API call failed');
+            if (!response.ok) throw new Error('API call failed: ' + response.status);
             
             const data = await response.json();
-            return data.output?.choices?.[0]?.message?.content?.[0]?.text || 'Scientific figure';
+            return data.description || 'Scientific figure';
         }
 
         async function createCollage(images, descriptions, cols, outputSize) {
