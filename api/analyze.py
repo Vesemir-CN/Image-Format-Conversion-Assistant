@@ -2,6 +2,7 @@ import json
 import os
 
 API_KEY = os.environ.get('ARK_API_KEY', '483e4f2b-fe23-4ab3-a3f3-ab66c279f748')
+ENDPOINT_ID = 'ep-20260221013833-rdjh9'
 
 def handler(event, context):
     try:
@@ -25,7 +26,7 @@ def handler(event, context):
         }
         
         payload = {
-            'model': 'doubao-seed-2-0-lite-260215',
+            'model': ENDPOINT_ID,
             'input': [
                 {
                     'role': 'user',
@@ -56,7 +57,6 @@ def handler(event, context):
         
         result = response.json()
         
-        # Handle the new response format
         text = ''
         if 'output' in result:
             output = result['output']
