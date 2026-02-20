@@ -497,20 +497,32 @@
                 const letters = 'abcdefghijklmnopqrstuvwx';
                 
                 for (let i = 0; i < collageFiles.length; i++) {
-                    const progress = 10 + Math.round((i / collageFiles.length) * 80);
+                    const progress = 10 + Math.round((i / collageFiles.length) * 40);
                     updateCollageProgress(progress, `Converting: ${collageFiles[i].name}`);
                     const blob = await convertToJpeg(collageFiles[i], 600);
-                    images.push({ blob, letter: letters[i] });
+                    images.push({ blob, letter: letters[i], index: i });
                 }
 
-                // Step 2: Create collage (no descriptions)
-                updateCollageProgress(90, 'Generating collage layout...');
+                // Step 2: AI Analysis for smart arrangement
+                updateCollageProgress(50, 'AI analyzing images for smart arrangement...');
+                const analyzedImages = await analyzeImagesWithAI(images);
+                
+                // Sort images based on AI analysis
+                analyzedImages.sort((a, b) => a.order - b.order);
+                
+                // Update letters after sorting
+                for (let i = 0; i < analyzedImages.length; i++) {
+                    analyzedImages[i].letter = letters[i];
+                }
+
+                // Step 3: Create collage
+                updateCollageProgress(80, 'Generating collage layout...');
                 const cols = parseInt(document.getElementById('collage-cols').value);
                 const outputSize = parseInt(document.getElementById('output-size').value);
                 
-                const collageBlob = await createCollage(images, cols, outputSize);
+                const collageBlob = await createCollage(analyzedImages, cols, outputSize);
 
-                // Step 3: Show result
+                // Step 4: Show result
                 updateCollageProgress(100, 'Complete!');
                 showCollageResult(collageBlob);
             } catch (e) {
@@ -525,6 +537,58 @@
             document.getElementById('collage-progress-fill').style.width = percent + '%';
             document.getElementById('collage-progress-percentage').textContent = percent + '%';
             document.getElementById('collage-progress-message').textContent = message;
+        }
+
+        async function analyzeImagesWithAI(images) {
+            const results = [];
+            const totalImages = images.length;
+            
+            for (let i = 0; i < totalImages; i++) {
+                const progress = 50 + Math.round((i / totalImages) * 30);
+                updateCollageProgress(progress, `AI analyzing image ${i+1}/${totalImages}...`);
+                
+                try {
+                    const blob = images[i].blob;
+                    const base64 = await blobToBase64(blob);
+                    
+                    const prompt = `You are analyzing scientific images for a collage. Analyze this image and respond with ONLY a JSON object in this exact format: {"order": N, "description": "brief description"}. The "order" should be a number from 1 to ${totalImages} indicating the logical position in a collage sequence (e.g., 1=title/introduction, 2=methods, 3=results, etc.). Analyze what this image shows and assign appropriate order.`;
+                    
+                    const response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: base64, prompt: prompt })
+                    });
+                    
+                    if (!response.ok) throw new Error('API failed');
+                    
+                    const data = await response.json();
+                    const parsed = JSON.parse(data.description || '{"order":' + (i+1) + ',"description":"image"}');
+                    
+                    results.push({
+                        ...images[i],
+                        order: parsed.order || (i + 1),
+                        description: parsed.description || ''
+                    });
+                } catch (e) {
+                    console.error('Error analyzing image:', e);
+                    results.push({
+                        ...images[i],
+                        order: i + 1,
+                        description: images[i].letter
+                    });
+                }
+            }
+            
+            return results;
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
 
         async function createCollage(images, cols, outputSize) {
