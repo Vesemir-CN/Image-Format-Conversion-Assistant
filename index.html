@@ -406,20 +406,13 @@
 
         function canvasToJpeg(canvas, dpi) {
             return new Promise((resolve) => {
-                const scale = dpi / 96;
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = canvas.width * scale;
-                tempCanvas.height = canvas.height * scale;
-                const ctx = tempCanvas.getContext('2d');
-                ctx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-                
-                // Convert to blob directly
-                tempCanvas.toBlob((blob) => {
+                // Simple approach - convert canvas directly to JPEG
+                canvas.toBlob((blob) => {
                     if (blob) {
                         resolve(blob);
                     } else {
-                        // Fallback: use data URL and convert to blob
-                        const dataURL = tempCanvas.toDataURL('image/jpeg', 0.95);
+                        // Fallback
+                        const dataURL = canvas.toDataURL('image/jpeg', 0.95);
                         const byteString = atob(dataURL.split(',')[1]);
                         const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
                         const ab = new ArrayBuffer(byteString.length);
@@ -555,6 +548,16 @@
                 updateCollageProgress(70, 'Generating collage layout...');
                 const cols = parseInt(document.getElementById('collage-cols').value);
                 const outputSize = parseInt(document.getElementById('output-size').value);
+                
+                console.log('Creating collage with:', { imagesCount: images.length, descriptionsCount: descriptions.length });
+                console.log('Images:', images);
+                console.log('Descriptions:', descriptions);
+                
+                // Ensure descriptions array matches images length
+                while (descriptions.length < images.length) {
+                    descriptions.push('');
+                }
+                
                 const collageBlob = await createCollage(images, descriptions, cols, outputSize);
 
                 // Step 4: Show result
@@ -653,34 +656,40 @@
                 const y = row * (cellHeight + labelHeight);
                 
                 // Load and draw image
-                const img = await loadImage(images[i].blob);
-                const scale = Math.min(cellWidth / img.width, cellHeight / img.height);
-                const drawWidth = img.width * scale;
-                const drawHeight = img.height * scale;
-                const drawX = x + (cellWidth - drawWidth) / 2;
-                const drawY = y + (cellHeight - drawHeight) / 2;
-                
-                ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-                
-                // Draw letter label (top-left)
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(x + 5, y + 5, 28, 28);
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 18px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(images[i].letter, x + 19, y + 19);
-                
-                // Draw description (bottom)
-                if (descriptions[i]) {
-                    ctx.fillStyle = '#f3f4f6';
-                    ctx.fillRect(x, y + cellHeight, cellWidth, labelHeight);
-                    ctx.fillStyle = '#374151';
-                    ctx.font = '12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    const desc = descriptions[i].length > 40 ? descriptions[i].substring(0, 40) + '...' : descriptions[i];
-                    ctx.fillText(desc, x + cellWidth/2, y + cellHeight + labelHeight/2);
+                try {
+                    if (!images[i].blob) {
+                        console.error('Missing blob for image', i);
+                        continue;
+                    }
+                    const img = await loadImage(images[i].blob);
+                    const scale = Math.min(cellWidth / img.width, cellHeight / img.height);
+                    const drawWidth = img.width * scale;
+                    const drawHeight = img.height * scale;
+                    const drawX = x + (cellWidth - drawWidth) / 2;
+                    const drawY = y + (cellHeight - drawHeight) / 2;
+                    
+                    ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+                    
+                    // Draw letter label (top-left)
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(images[i].letter, x + 8, y + 5);
+                    
+                    // Draw description (bottom)
+                    if (descriptions[i]) {
+                        ctx.fillStyle = '#f3f4f6';
+                        ctx.fillRect(x, y + cellHeight, cellWidth, labelHeight);
+                        ctx.fillStyle = '#374151';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        const desc = descriptions[i].length > 40 ? descriptions[i].substring(0, 40) + '...' : descriptions[i];
+                        ctx.fillText(desc, x + cellWidth/2, y + cellHeight + labelHeight/2);
+                    }
+                } catch (e) {
+                    console.error('Error drawing image', i, e);
                 }
             }
             
@@ -689,9 +698,13 @@
 
         function loadImage(blob) {
             return new Promise((resolve, reject) => {
+                if (!blob || !(blob instanceof Blob)) {
+                    reject(new Error('Invalid blob'));
+                    return;
+                }
                 const img = new Image();
                 img.onload = () => resolve(img);
-                img.onerror = reject;
+                img.onerror = () => reject(new Error('Failed to load image'));
                 img.src = URL.createObjectURL(blob);
             });
         }
