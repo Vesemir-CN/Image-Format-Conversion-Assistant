@@ -3,8 +3,7 @@
   "builds": [
     {
       "src": "api/analyze.py",
-      "use": "@vercel/python",
-      "pythonVersion": "3.11"
+      "use": "@vercel/python"
     },
     {
       "src": "index.html",
