@@ -9,15 +9,5 @@
       "src": "index.html",
       "use": "@vercel/static"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/analyze",
-      "dest": "api/analyze.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "index.html"
-    }
   ]
 }
