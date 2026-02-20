@@ -551,7 +551,9 @@
                     const blob = images[i].blob;
                     const base64 = await blobToBase64(blob);
                     
-                    const prompt = `You are analyzing scientific images for a collage. Analyze this image and respond with ONLY a JSON object in this exact format: {"order": N, "description": "brief description"}. The "order" should be a number from 1 to ${totalImages} indicating the logical position in a collage sequence (e.g., 1=title/introduction, 2=methods, 3=results, etc.). Analyze what this image shows and assign appropriate order.`;
+                    const prompt = `Analyze this scientific image and tell me: 1) What type of figure is it (e.g., bar chart, line plot, microscopy photo, flowchart)? 2) What does it show? Respond in this exact JSON format: {"order": N, "description": "X"} where N is the logical sequence number from 1 to ${totalImages}. For example, if this is the first figure in a paper, order should be 1.`;
+                    
+                    console.log('Calling AI for image', i+1);
                     
                     const response = await fetch('/api/analyze', {
                         method: 'POST',
@@ -559,16 +561,42 @@
                         body: JSON.stringify({ image: base64, prompt: prompt })
                     });
                     
-                    if (!response.ok) throw new Error('API failed');
+                    console.log('AI response status:', response.status);
+                    
+                    if (!response.ok) throw new Error('API failed: ' + response.status);
                     
                     const data = await response.json();
-                    const parsed = JSON.parse(data.description || '{"order":' + (i+1) + ',"description":"image"}');
+                    console.log('AI response data:', data);
                     
-                    results.push({
-                        ...images[i],
-                        order: parsed.order || (i + 1),
-                        description: parsed.description || ''
-                    });
+                    // Try to parse JSON from description
+                    let parsed = null;
+                    try {
+                        if (data.description) {
+                            // Try to extract JSON from response
+                            const jsonMatch = data.description.match(/\{[^}]+\}/);
+                            if (jsonMatch) {
+                                parsed = JSON.parse(jsonMatch[0]);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
+                    }
+                    
+                    if (parsed && parsed.order) {
+                        results.push({
+                            ...images[i],
+                            order: parsed.order,
+                            description: parsed.description || ''
+                        });
+                    } else {
+                        // If no valid JSON, use the description as-is with original order
+                        console.log('Using fallback for image', i+1);
+                        results.push({
+                            ...images[i],
+                            order: i + 1,
+                            description: data.description ? data.description.substring(0, 50) : 'image'
+                        });
+                    }
                 } catch (e) {
                     console.error('Error analyzing image:', e);
                     results.push({
@@ -579,6 +607,7 @@
                 }
             }
             
+            console.log('Final analyzed results:', results);
             return results;
         }
 
