@@ -159,43 +159,15 @@
                     <div id="collage-files-container" class="space-y-3"></div>
                 </div>
 
-                <!-- Image Settings -->
-                <div class="bg-purple-50 rounded-2xl p-6 mb-8">
-                    <h3 class="font-semibold text-gray-800 mb-4">
-                        <i class="fa fa-images text-purple-600 mr-2"></i>Image Arrangement Settings
-                    </h3>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Arrangement Method</label>
-                        <div class="flex gap-4">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="radio" name="arrange-method" value="auto" checked class="mr-2">
-                                <span class="text-gray-700">Auto Detect (Smart Analysis)</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="radio" name="arrange-method" value="manual" class="mr-2">
-                                <span class="text-gray-700">Manual Input</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Manual Input Section -->
-                    <div id="manual-input-section" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Image Descriptions (one per line)</label>
-                        <textarea id="image-descriptions" rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500" placeholder="a: UMAP cluster analysis&#10;b: Cell type distribution&#10;c: Gene expression heatmap"></textarea>
-                    </div>
-                </div>
-
                 <!-- Collage Layout Settings -->
                 <div class="grid md:grid-cols-2 gap-6 mb-8">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-3">Collage Columns</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Columns</label>
                         <select id="collage-cols" class="w-full px-4 py-3 border border-gray-300 rounded-xl">
                             <option value="2">2 Columns</option>
                             <option value="3" selected>3 Columns</option>
                             <option value="4">4 Columns</option>
                             <option value="6">6 Columns</option>
-                            <option value="8">8 Columns</option>
                         </select>
                     </div>
                     <div>
@@ -204,7 +176,6 @@
                             <option value="1200">Small (1200px)</option>
                             <option value="1800" selected>Medium (1800px)</option>
                             <option value="2400">Large (2400px)</option>
-                            <option value="3000">Extra Large (3000px)</option>
                         </select>
                     </div>
                 </div>
@@ -526,41 +497,20 @@
                 const letters = 'abcdefghijklmnopqrstuvwx';
                 
                 for (let i = 0; i < collageFiles.length; i++) {
-                    const progress = 10 + Math.round((i / collageFiles.length) * 30);
+                    const progress = 10 + Math.round((i / collageFiles.length) * 80);
                     updateCollageProgress(progress, `Converting: ${collageFiles[i].name}`);
                     const blob = await convertToJpeg(collageFiles[i], 600);
                     images.push({ blob, letter: letters[i] });
                 }
 
-                // Step 2: Get descriptions - auto or manual
-                updateCollageProgress(45, 'Processing image descriptions...');
-                let descriptions = [];
-                const method = document.querySelector('input[name="arrange-method"]:checked').value;
-                
-                if (method === 'auto') {
-                    descriptions = await analyzeImagesWithAI(images);
-                } else {
-                    const manualText = document.getElementById('image-descriptions').value;
-                    descriptions = manualText.split('\n').filter(l => l.trim());
-                }
-
-                // Step 3: Create collage
-                updateCollageProgress(70, 'Generating collage layout...');
+                // Step 2: Create collage (no descriptions)
+                updateCollageProgress(90, 'Generating collage layout...');
                 const cols = parseInt(document.getElementById('collage-cols').value);
                 const outputSize = parseInt(document.getElementById('output-size').value);
                 
-                console.log('Creating collage with:', { imagesCount: images.length, descriptionsCount: descriptions.length });
-                console.log('Images:', images);
-                console.log('Descriptions:', descriptions);
-                
-                // Ensure descriptions array matches images length
-                while (descriptions.length < images.length) {
-                    descriptions.push('');
-                }
-                
-                const collageBlob = await createCollage(images, descriptions, cols, outputSize);
+                const collageBlob = await createCollage(images, cols, outputSize);
 
-                // Step 4: Show result
+                // Step 3: Show result
                 updateCollageProgress(100, 'Complete!');
                 showCollageResult(collageBlob);
             } catch (e) {
@@ -577,75 +527,16 @@
             document.getElementById('collage-progress-message').textContent = message;
         }
 
-        async function analyzeImagesWithAI(images) {
-            const apiKey = '483e4f2b-fe23-4ab3-a3f3-ab66c279f748';
-            const descriptions = [];
-            
-            for (let i = 0; i < images.length; i++) {
-                updateCollageProgress(45 + Math.round((i / images.length) * 20), `Analyzing image ${i+1}/${images.length}...`);
-                
-                try {
-                    const imgData = images[i];
-                    const blob = imgData.blob;
-                    
-                    // Convert blob to base64
-                    const base64 = await blobToBase64(blob);
-                    
-                    const prompt = `Analyze this scientific image and provide a brief description (5-15 words) of what it shows. Focus on: data visualization type, what the axes represent, main patterns or findings.`;
-                    
-                    const desc = await callDoubaoAPI(apiKey, base64, prompt);
-                    descriptions.push(`${imgData.letter}) ${desc}`);
-                } catch (e) {
-                    console.error('Error analyzing image:', e);
-                    descriptions.push(`${images[i].letter}) ${collageFiles[i].name.replace(/\.[^/.]+$/, '')}`);
-                }
-            }
-            
-            return descriptions;
-        }
-
-        function blobToBase64(blob) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const result = reader.result;
-                    resolve(result.split(',')[1]);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-
-        async function callDoubaoAPI(apiKey, imageBase64, prompt) {
-            const response = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    image: imageBase64,
-                    prompt: prompt
-                })
-            });
-            
-            if (!response.ok) throw new Error('API call failed: ' + response.status);
-            
-            const data = await response.json();
-            return data.description || 'Scientific figure';
-        }
-
-        async function createCollage(images, descriptions, cols, outputSize) {
+        async function createCollage(images, cols, outputSize) {
             const rows = Math.ceil(images.length / cols);
             const cellWidth = Math.floor(outputSize / cols);
             const cellHeight = Math.floor(cellWidth * 0.75);
-            const labelHeight = 60;
             
             const canvas = document.createElement('canvas');
             canvas.width = cols * cellWidth;
-            canvas.height = rows * (cellHeight + labelHeight);
+            canvas.height = rows * cellHeight;
             const ctx = canvas.getContext('2d');
             
-            // White background
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
@@ -653,14 +544,10 @@
                 const col = i % cols;
                 const row = Math.floor(i / cols);
                 const x = col * cellWidth;
-                const y = row * (cellHeight + labelHeight);
+                const y = row * cellHeight;
                 
-                // Load and draw image
                 try {
-                    if (!images[i].blob) {
-                        console.error('Missing blob for image', i);
-                        continue;
-                    }
+                    if (!images[i].blob) continue;
                     const img = await loadImage(images[i].blob);
                     const scale = Math.min(cellWidth / img.width, cellHeight / img.height);
                     const drawWidth = img.width * scale;
@@ -670,24 +557,11 @@
                     
                     ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
                     
-                    // Draw letter label (top-left)
                     ctx.fillStyle = '#000000';
-                    ctx.font = 'bold 24px Arial';
+                    ctx.font = 'bold 28px Arial';
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'top';
-                    ctx.fillText(images[i].letter, x + 8, y + 5);
-                    
-                    // Draw description (bottom)
-                    if (descriptions[i]) {
-                        ctx.fillStyle = '#f3f4f6';
-                        ctx.fillRect(x, y + cellHeight, cellWidth, labelHeight);
-                        ctx.fillStyle = '#374151';
-                        ctx.font = '12px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        const desc = descriptions[i].length > 40 ? descriptions[i].substring(0, 40) + '...' : descriptions[i];
-                        ctx.fillText(desc, x + cellWidth/2, y + cellHeight + labelHeight/2);
-                    }
+                    ctx.fillText(images[i].letter, x + 10, y + 10);
                 } catch (e) {
                     console.error('Error drawing image', i, e);
                 }
