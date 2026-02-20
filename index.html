@@ -536,9 +536,13 @@
                 
                 const collageBlob = await createCollage(analyzedImages, cols, outputSize);
 
-                // Step 4: Show result
+                // Step 4: Generate Figure Legend
+                updateCollageProgress(90, 'Generating Figure Legend...');
+                const figureLegend = await generateFigureLegend(analyzedImages);
+
+                // Step 5: Show result
                 updateCollageProgress(100, 'Complete!');
-                showCollageResult(collageBlob);
+                showCollageResult(collageBlob, figureLegend);
             } catch (e) {
                 alert('Error: ' + e.message);
                 console.error(e);
@@ -701,12 +705,76 @@
 
         let currentCollageBlob = null;
         
-        function showCollageResult(blob) {
+        function showCollageResult(blob, figureLegend = '') {
             currentCollageBlob = blob;
             const url = URL.createObjectURL(blob);
             const container = document.getElementById('collage-preview');
-            container.innerHTML = `<img src="${url}" class="w-full h-auto" style="max-height: 600px; object-fit: contain;">`;
+            
+            let legendHTML = '';
+            if (figureLegend) {
+                legendHTML = `
+                    <div class="mt-6 bg-gray-50 rounded-xl p-6">
+                        <h4 class="font-bold text-gray-800 mb-3">
+                            <i class="fa fa-file-text text-purple-600 mr-2"></i>Figure Legend
+                        </h4>
+                        <div class="relative">
+                            <pre class="whitespace-pre-wrap text-sm text-gray-700 font-mono bg-white p-4 rounded-lg border border-gray-200 max-h-64 overflow-y-auto" id="figure-legend-text">${figureLegend}</pre>
+                            <button onclick="copyLegend()" class="absolute top-2 right-2 bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">
+                                <i class="fa fa-copy mr-1"></i>Copy
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = `
+                <img src="${url}" class="w-full h-auto" style="max-height: 600px; object-fit: contain;">
+                ${legendHTML}
+            `;
             document.getElementById('collage-result').classList.remove('hidden');
+        }
+
+        function copyLegend() {
+            const legendText = document.getElementById('figure-legend-text').textContent;
+            navigator.clipboard.writeText(legendText).then(() => {
+                alert('Figure Legend copied to clipboard!');
+            });
+        }
+
+        async function generateFigureLegend(analyzedImages) {
+            try {
+                // Get all image descriptions
+                const descriptions = analyzedImages.map((img, i) => {
+                    return `${img.letter}) ${img.description || 'Image ' + (i+1)}`;
+                }).join('\n');
+                
+                const prompt = `You are writing a high-quality Figure Legend for a top-tier scientific journal (like Nature, Science, Cell). Based on the following image descriptions from a collage, generate a professional figure legend.
+
+Image descriptions:
+${descriptions}
+
+Write a complete Figure Legend that includes:
+1. A brief title for the figure (1-2 sentences)
+2. A panel-by-panel description (a, b, c, etc.) explaining what each panel shows
+3. Statistical information or key findings if applicable
+4. A brief conclusion about what the figure demonstrates overall
+
+Use professional academic language. Format the legend for direct use in a manuscript.`;
+
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: '', prompt: prompt })
+                });
+                
+                if (!response.ok) throw new Error('API failed');
+                
+                const data = await response.json();
+                return data.description || '';
+            } catch (e) {
+                console.error('Error generating figure legend:', e);
+                return '';
+            }
         }
 
         function downloadCollage() {
