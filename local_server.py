@@ -13,6 +13,18 @@ ENDPOINT_ID = 'ep-20260221013833-rdjh9'
 def index():
     return send_from_directory('.', 'index.html')
 
+@app.route('/about.html')
+def about():
+    return send_from_directory('.', 'about.html')
+
+@app.route('/privacy.html')
+def privacy():
+    return send_from_directory('.', 'privacy.html')
+
+@app.route('/terms.html')
+def terms():
+    return send_from_directory('.', 'terms.html')
+
 @app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze():
     if request.method == 'OPTIONS':
@@ -31,9 +43,7 @@ def analyze():
             'Authorization': 'Bearer ' + API_KEY
         }
         
-        # Always use array format for input
         if image_base64:
-            # Image + text request
             payloads = [
                 {
                     'model': ENDPOINT_ID,
@@ -87,7 +97,6 @@ def analyze():
             
             return jsonify({'error': 'API call failed'}), 400
         else:
-            # Text-only request - use array format
             payload = {
                 'model': ENDPOINT_ID,
                 'input': [
@@ -98,11 +107,7 @@ def analyze():
                 ]
             }
             
-            print('Text-only request:', prompt[:100])
             response = requests.post(url, json=payload, headers=headers, timeout=60)
-            
-            print('Response status:', response.status_code)
-            print('Response body:', response.text[:200])
             
             if response.status_code != 200:
                 return jsonify({'error': 'API error', 'details': response.text}), response.status_code
@@ -125,7 +130,6 @@ def analyze():
             return jsonify({'description': text})
         
     except Exception as e:
-        print('Error:', str(e))
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
